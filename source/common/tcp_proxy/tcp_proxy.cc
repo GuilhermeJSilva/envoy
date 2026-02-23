@@ -1064,8 +1064,7 @@ Network::FilterStatus Filter::onData(Buffer::Instance& data, bool end_stream) {
                        "Initial data received, establishing upstream connection. "
                        "early_data_buffer_.length()={}",
                        read_callbacks_->connection(), early_data_buffer_.length());
-        // Route should already be set in onNewConnection().
-        ASSERT(route_ != nullptr);
+        route_ = pickRoute();
         establishUpstreamConnection();
       }
     }
@@ -1146,10 +1145,6 @@ Network::FilterStatus Filter::onNewConnection() {
     route_ = pickRoute();
     return establishUpstreamConnection();
   }
-
-  // For ON_DOWNSTREAM_DATA or ON_DOWNSTREAM_TLS_HANDSHAKE modes, delay the connection.
-  // Pre-pick the route so it's available when connection is triggered.
-  route_ = pickRoute();
 
   // Log the specific delay reason.
   if (connect_mode_ == UpstreamConnectMode::ON_DOWNSTREAM_DATA) {
@@ -1447,8 +1442,7 @@ void Filter::onDownstreamTlsHandshakeComplete() {
 
   // For ON_DOWNSTREAM_TLS_HANDSHAKE mode, establish the upstream connection now.
   if (connect_mode_ == UpstreamConnectMode::ON_DOWNSTREAM_TLS_HANDSHAKE) {
-    // Route should already be set in onNewConnection().
-    ASSERT(route_ != nullptr);
+    route_ = pickRoute();
     establishUpstreamConnection();
   }
 }
