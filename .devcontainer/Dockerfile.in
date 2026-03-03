@@ -1,8 +1,20 @@
+FROM docker.palantir.build/circle2-build-images/ubuntu-jammy-standard:1.85.0@sha256:ebefb0c6a6ee50b4c66ed36f905087a0fda8f01a926e1368d5af6b87441ecf41 AS cert-builder
+
+RUN mkdir -p /usr/local/share/ca-certificates && \
+    wget https://pki.palantir.tech/ca-download/PalantirThirdGenRootCA-selfsign.pem -O /tmp/PalantirThirdGenRootCA-selfsign.crt
+
+RUN keytool -import -trustcacerts -keystore /tmp/java-cacerts \
+   -storepass changeit -noprompt -alias palcert -file /tmp/PalantirThirdGenRootCA-selfsign.crt
+
 FROM %%ENVOY_BUILD_IMAGE%%
 
 ARG USERNAME=envoybuild
 
 ENV BUILD_DIR=/build
+
+COPY --from=cert-builder /tmp/java-cacerts /etc/ssl/certs/java/cacerts
+COPY --from=cert-builder /tmp/PalantirThirdGenRootCA-selfsign.crt /usr/local/share/ca-certificates/PalantirThirdGenRootCA-selfsign.crt
+RUN update-ca-certificates
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get -y update \

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Setup bazel trust store
+echo "startup --host_jvm_args=-Djavax.net.ssl.trustStore=/etc/ssl/certs/java/cacerts" >> user.bazelrc
+echo "startup --host_jvm_args=-Djavax.net.ssl.trustStorePassword=changeit" >> user.bazelrc
+echo "build --test_tag_filters=-requires-network,-palantir-failing-test" >> user.bazelrc
 echo "build --config=clang" >> user.bazelrc
 
 # Ideally we want this line so bazel doesn't pollute things outside of the devcontainer, but some of
