@@ -12,14 +12,6 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 git_repository(
     name = "v8",
-    patches = [
-        "@envoy//bazel:v8.patch",
-        "@envoy//bazel:v8_atomic_ref.patch",
-        "@envoy//bazel:v8_novtune.patch",
-        "@envoy//bazel:v8_ppc64le.patch",
-        # https://issues.chromium.org/issues/423403090
-        "@envoy//bazel:v8_python.patch",
-    ],
     patch_args = ["-p1"],
     patch_cmds = [
         "find ./src ./include -type f -exec sed -i.bak -e 's!#include \"third_party/simdutf/simdutf.h\"!#include \"simdutf.h\"!' {} \\;",
@@ -33,6 +25,14 @@ git_repository(
         # bumped. Clang 18 has bugs with consteval in template contexts (fixed in clang 19+).
         "find ./src -type f \\( -name '*.h' -o -name '*.cc' \\) -exec sed -i.bak 's/consteval/constexpr/g' {} \\;",
         "find ./src -type f -name '*.bak' -delete",
+    ],
+    patches = [
+        "@envoy//bazel:v8.patch",
+        "@envoy//bazel:v8_atomic_ref.patch",
+        "@envoy//bazel:v8_novtune.patch",
+        "@envoy//bazel:v8_ppc64le.patch",
+        # https://issues.chromium.org/issues/423403090
+        "@envoy//bazel:v8_python.patch",
     ],
     remote = "https://github.com/v8/v8",
     tag = "14.6.202.10",
